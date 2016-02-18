@@ -48,35 +48,38 @@
 
         </div>
         <script>
-            var eKnop = document.querySelector('#eKnop');
+            var eKnop = document.querySelector('#deKnop');
             eKnop.onclick = deling;
 
-            function deling(){
+            function deling() {
                 var nGetal1 = document.getElementById('getal1');
                 var nGetal2 = document.getElementById('getal2');
-                var eBericht = document.querySelector('#output');
-                
-                
+                var sBericht = document.getElementById('output');
+
+
                 var eGetal1 = parseFloat(nGetal1.value);
                 var eGetal2 = parseFloat(nGetal2.value);
 
-                if (eGetal1 == 0 || eGetal2 == 0) {
-                    alert('bloody hell');
-                    sBericht = "Niet delen door nul";
-                }
-                
-                if(eGetal1>eGetal2){
-                     var nQuotient = eGetal1 / eGetal2;
-                     sBericht = "Uw deling is" + nQuotient;
-                }
-                else
-                {
-                    var nQuotient = eGetal2 / eGetal1;
-                    sBericht = "Uw deling is" + nQuotient;
 
+                if (eGetal1 == 0 || eGetal2 == 0) {
+                    
+                   sBericht.innerHTML = "Niet delen door nul";
                 }
-                
-                eBericht.innerHTML = sBericht;
+                else {
+                    if (eGetal1 > eGetal2) {
+                        var nMin = eGetal2;
+                        var nMax = eGetal1;
+                    }
+                    else
+                    {
+                        var nMin = eGetal1;
+                        var nMax = eGetal2;
+                    }
+                    
+                    var nQuotient 		= nMax/nMin;
+                    var sResultaat 		= nMax + " gedeeld door " + nMin + " is : " + nQuotient;
+                    sBericht.innerHTML = sResultaat ;
+                }
             }
 
         </script>

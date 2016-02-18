@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>DOM Attributen en methods uitgetest</title>
+        <style> 
+            table.flashy tr:nth-child(even) {background-color: #FF8AB0; color:#433025}
+            table.flashy tr:nth-child(odd) {background-color: #FFD88A; color:#3369D7} 
+        </style>
+        <script> …</script>
+    </head>
+    <body>
+        <div id="wrapper">
+            <header>
+                <hgroup>
+                    <h1>DOM Attributen en methods uitgetest</h1>
+                    <h2>Demos van de DOM in het theorieboek (editie 2012)</h2>
+                </hgroup>
+            </header>
+            <article>
+                <section id="huishouden">
+                    <h3>Boodschappenlijst</h3>
+                    <ul>
+                        <li>brood</li>
+                        <li>margarine</li>
+                        <li>eieren</li>
+                        <li>spek</li>
+                    </ul>
+                    <h3>Klusjeslijst</h3>
+                    <ul>
+                        <li>gordijnen strijken</li>
+                        <li>schilderen
+                            <ul>
+                                <li>keukenvenster</li> 
+                                <li>garagedeur</li> 
+                            </ul>
+                        </li>
+                        <li>mol vangen</li>
+                    </ul>
+                </section>
+                <section id="wishlist">
+                    <h3>Wishlist</h3>
+                    <table class="flashy">
+                        <thead>
+                            <tr>
+                                <th scope="col">Wat</th><th scope="col">prijs</th>
+                                <th scope="col">foto</th>
+                                <th scope="col">wissen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>iPad</td>
+                                <td>450</td>
+                                <td><img src="../images/ipad.jpg" width="80" height="80" alt="iPad"></td>
+                                <td><button class='wisknop'>wis</button></td>
+                            </tr>
+                            <tr>
+                                <td>boek</td>
+                                <td>34</td>
+                                <td><img src="../images/book.jpg" width="80" height="80" alt="book"></td>
+                                <td><button class='wisknop'>wis</button></td>
+                            </tr>
+                            <tr>
+                                <td>voetbal</td>
+                                <td>120</td>
+                                <td><img src="../images/football.jpg" width="80" height="80" 
+                                         alt="voetbal"></td>
+                                <td><button class='wisknop'>wis</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </article>
+            <footer>Copyright vdab</footer>
+            <script>
+                        var secBoodschappen = document.getElementById('huishouden');
+                var lijstBoodschappen = secBoodschappen.getElementsByTagName('ul')[0];
+                var nieuwItem = document.createElement('li');
+                var tekst = document.createTextNode('koffie');
+                nieuwItem.appendChild(tekst);
+                lijstBoodschappen.appendChild(nieuwItem);
+
+                var evenRijen = document.querySelectorAll('tbody tr:nth-child(odd)');
+                var onevenRijen = document.querySelectorAll('tbody tr:nth-child(even)');
+                for (i = 0; i < evenRijen.length; i++) {
+                    //blauw op roze
+                    //evenRijen[i].style.backgroundColor   = "#FFD88A";
+                    //evenRijen[i].style.color     = "#3369D7";
+                    evenRijen[i].setAttribute("class", "even");
+                }
+                for (i = 0; i < onevenRijen.length; i++) {
+                    //bruin op geel
+                    //onevenRijen[i].style.backgroundColor   = "#FF8AB0";
+                    //onevenRijen[i].style.color    = "#433025";
+                    onevenRijen[i].setAttribute("class", "oneven");
+                }
+
+                var wisLinks = document.querySelectorAll('a.wislink');
+                //eventhandler registratie
+                for (i = 0; i < wisLinks.length; i++) {
+                    wisLinks[i].addEventListener('click', verwijderRij, false);
+                }
+
+                function verwijderRij(e) {
+                    /*
+                     eventhandler: verwijdert de huidige produktrij
+                     */
+                    e.preventDefault();
+                    var antwoord = window.confirm("dit produkt verwijderen?");
+                    if (antwoord === true) {
+                        console.log('verwijder OK');
+                    }
+                }
+            </script>
+        </div>
+    </body>
+</html> 
