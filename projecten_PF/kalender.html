@@ -1,31 +1,111 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>JS PF project: kalender</title>
-<link rel="stylesheet" href="kalender.css" type="text/css" />
-<style media="screen" type="text/css">
-<!--
-noscript div {
-	color:red;
-}
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <title>JS PF project: kalender</title>
+        <link rel="stylesheet" href="kalender.css" type="text/css" />
+        <style media="screen" type="text/css">
+            <!--
+            noscript div {
+                color:red;
+            }
 
-#kalender{
-	background-color:#69F;
-	padding:1em;
-	overflow:auto;
-	}
-div.maandContainer{
-		height:170px;
-		float:left;
-	}
--->
-</style>
+            #kalender{
+                background-color:#69F;
+                padding:1em;
+                overflow:auto;
+            }
+            div.maandContainer{
+                height:170px;
+                float:left;
+            }
+            -->
+        </style>
+        <script type="text/javascript" src="nuttige_lib.js"></script>
+        <script type="text/javascript">
+            window.onload = function () {
+                // DOM elementen
+                var divOutput = document.getElementById('output');
+                var divKalender = document.getElementById('kalender');
 
-</head>
-<body>
-<h1>JS PF project: JS Kalender</h1>
-<div id="output">output element</div>
-<div id="kalender"></div>
-</body>
+                //plaatst huidige datum-tijd in output element
+                divOutput.innerHTML = getVandaagStr();
+            }
+            
+            function maakMaandTabel(kalenderJaar, maandIndex) {
+                /*
+                 Dependency: nuttig_lib 
+                 Return: string, voor innerHTML: een tabelletje met een maandoverzicht
+                 @kalenderJaar: integer,  4 digit jaar
+                 @maandIndex: integer,  van 0-11
+                 
+                 */
+
+                //controle argumenten: 
+                if (isNaN(kalenderJaar) || (kalenderJaar.toString().length != 4)) {
+                    return "fout jaargetal";
+                }
+                if (isNaN(maandIndex) || (maandIndex < 0) || (maandIndex > 11)) {
+                    return "fout maandgetal";
+                }
+
+                //weekdag van de eerste dag van de maand
+                var start_datum = new Date(kalenderJaar, maandIndex, 1);
+                var start_weekdag = start_datum.getDay();
+
+                //bepaal einddag vr die maand, mogelijke uitzondering februari van schrikkeljaar
+                var eindDag = arrMaanden[maandIndex][1];
+                if ((maandIndex == 1) && (isSchrikkeljaar(kalenderJaar))) {
+                    eindDag = 29;
+                }
+
+
+
+                //opbouw returnwaarde string
+                strMaandTabel = "<table class='kalender'>\n";
+                // titelrij
+                strMaandTabel += "<tr><th colspan='7'>" + arrMaanden[maandIndex][0] + " ";
+                strMaandTabel += kalenderJaar + "</th></tr>\n";
+
+                //dagtitels 
+                strMaandTabel += "<tr>";
+                for (var i = 0; i < 7; i++) {
+                    strMaandTabel += "<td>" + arrWeekdagen[i].substr(0, 2).toUpperCase() + "</td>";
+                }
+                strMaandTabel += "</tr>\n";
+
+                var dag = 1;
+                var teller = 0;
+
+                while (dag <= eindDag) {
+                    // weekrij
+                    strMaandTabel += "<tr>";
+                    for (var i = 0; i < 7; i++) {
+                        //teken cellen, met of zonder dag ingevuld
+                        var strId = ''; // id samengesteld uit maandIndex en dagnummer
+                        var strDagNummer = ''; //het dagNummer
+                        //schrijf de dagen
+                        if ((teller >= start_weekdag) && (dag <= eindDag)) {
+                            strDagNummer = dag;
+                            strId = " id='" + kalenderJaar + "_" + maandIndex + "_" + dag + "'";
+                            dag++;
+                        }
+                        //schrijf de cel  
+                        strMaandTabel += "<td " + strId + ">" + strDagNummer + "</td>";
+                        teller++;
+                    }
+                    strMaandTabel += "</tr>\n";
+                }
+                strMaandTabel += "</table>\n";
+                return strMaandTabel;
+            }
+
+            }
+        </script> 
+    </head>
+    <body>
+        <h1>JS PF project: JS Kalender</h1>
+        <div id="output">output element</div>
+        <div id="kalender"></div>
+    </body>
 </html>
