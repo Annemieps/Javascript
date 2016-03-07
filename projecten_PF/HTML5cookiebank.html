@@ -40,7 +40,7 @@
                 text-align: left;
             }
         </style>
-        <script type="text/javascript" src="nuttige_lib.js"></script>
+
         <script>
             window.onload = function () {
 
@@ -55,45 +55,51 @@
                 var nSaldo = 0; // standaard saldo 
 
                 //test cookie
-                if (getCookie('klantnaam')) {
-                    //gekende klant 
-                    var sNaam = getCookie('klantnaam');
-                    var nSaldo = getCookie('saldo');
-                    
-                    //bericht
-                    sMsg += "Welkom " + sNaam + ",";
-                    sMsg += "uw saldo bedraagt " + nSaldo + " Euro";
-                    
-                    //knop
-                    var eKnop = maakKnop('Sluit rekening');
-                    eKnop.addEventListener('click', rekeningSluiten); //eventhandler 
-                }
-                else {
-                    //eerste bezoek  
-                    sMsg += "Welkom beste bezoeker. ";
-                    sMsg += "Als u bij ons een nieuwe rekening opent, ontvangt u een startsaldo van 100 Euro!";
-                    
-                    //knop
-                    var eKnop = maakKnop('Open rekening');
-                    eKnop.addEventListener('click', rekeningOpenen);
-                }
-                // generische DOM elementen
-                var dfBericht = document.createDocumentFragment();
-                var eNl = document.createElement('br');
+                if (localStorage) {
+                    //kan deze browser dit script aan?
+                    console.log('localStorage OK');
 
-                //vervolledig documentFragment en voeg in
-                var tNode = document.createTextNode(sMsg);
-                dfBericht.appendChild(tNode);
-                dfBericht.appendChild(eNl.cloneNode(false));
-                dfBericht.appendChild(eNl.cloneNode(false));
-                dfBericht.appendChild(eKnop);
+                    if (localStorage.klantnaam) {
+                        //gekende klant
+                        var sNaam = localStorage.klantnaam;
+                        var nSaldo = parseFloat(localStorage.saldo).toFixed(2);
 
-                eOutput.appendChild(dfBericht);
+                        //bericht
+                        sMsg += "Welkom " + sNaam + ",";
+                        sMsg += "uw saldo bedraagt " + nSaldo + " Euro";
 
-                //event handler voor + - knoppen 
-                eKnopKrediet.addEventListener('click', function () {berekenen('+')});
-                eKnopDebiet.addEventListener('click', function () {berekenen('-')});
+                        //knop
+                        var eKnop = maakKnop('Sluit rekening');
+                        eKnop.addEventListener('click', rekeningSluiten); //eventhandler 
+                    }
 
+                    else {
+                        //eerste bezoek  
+                        sMsg += "Welkom beste bezoeker. ";
+                        sMsg += "Als u bij ons een nieuwe rekening opent, ontvangt u een startsaldo van 100 Euro!";
+
+                        //knop
+                        var eKnop = maakKnop('Open rekening');
+                        eKnop.addEventListener('click', rekeningOpenen);
+                    }
+                
+                    // generische DOM elementen
+                    var dfBericht = document.createDocumentFragment();
+                    var eNl = document.createElement('br');
+
+                    //vervolledig documentFragment en voeg in
+                    var tNode = document.createTextNode(sMsg);
+                    dfBericht.appendChild(tNode);
+                    dfBericht.appendChild(eNl.cloneNode(false));
+                    dfBericht.appendChild(eNl.cloneNode(false));
+                    dfBericht.appendChild(eKnop);
+
+                    eOutput.appendChild(dfBericht);
+
+                    //event handler voor + - knoppen 
+                    eKnopKrediet.addEventListener('click', function () {berekenen('+')});
+                    eKnopDebiet.addEventListener('click', function () {berekenen('-')});
+                };
             } //einde window.onload
 
             /******************FUNCTIES*********************************/
@@ -111,30 +117,18 @@
             //----------------------------------------------------------
 
             function rekeningOpenen() {
-                console.log('rekening openen');
-
-            }
-            //----------------------------------------------------------
-
-            function rekeningSluiten() {
-                console.log('rekening sluiten');
-            }
-
-            //----------------------------------------------------------
-            function rekeningOpenen() {
                 //console.log('rekening openen');
                 var sNaam = window.prompt("Uw naam, graag?", "");
                 if (sNaam != "" && sNaam != null) {
-                    setCookie('klantnaam', sNaam, 100);
-                    setCookie('saldo', 100, 100);
+                    localStorage.setItem('klantnaam',sNaam); 
+                    localStorage.setItem('saldo',100);
                     window.history.go(0);
                 }
             }
             //----------------------------------------------------------
             function rekeningSluiten() {
                 //vernietigt de rekening, dus de cookies
-                clearCookie('klantnaam');
-                clearCookie('saldo');
+                localStorage.clear();
                 window.history.go(0);
             }
 
@@ -148,7 +142,7 @@
                 var nNieuwSaldo = 0;
                 var eBedrag = document.getElementById('bedrag');
                 var sBedrag = eBedrag.value;
-                var sSaldo = parseFloat(getCookie('saldo')).toFixed(2);
+                var sSaldo  = localStorage.getItem('saldo');
                 var sBericht = "";
                 var re = /,/;
                 sBedrag = sBedrag.replace(re, '.');
@@ -183,7 +177,7 @@
                             toonWaarschuwing(sBericht);
                         }
                         else {
-                            setCookie('saldo', nNieuwSaldo, 100);
+                            localStorage.setItem('saldo',nNieuwSaldo);
                             //onmiddelijk uitvoeren
                             window.history.go(0);
                             eBedrag.value = "";
