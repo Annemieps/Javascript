@@ -61,16 +61,98 @@
             -->
         </style>
         <script type="text/javascript">
+            var oFouten = {
+                //object oFouten heeft een property required die zelf 2 properties msg en test heeft
+                required: {
+                    /* enkel voor input type="text|password" */
+                    msg: "verplicht veld",
+                    //test is een method, bevat dus een functie. Die moet true of false returned
+                    test: function (elem) {
+                        return elem.value != "";
+                    }
+                },
+                aantal: {
+                    msg: "getal verwacht",
+                    test: function (elem) {
+                        //aantal test enkel de inhoud als getal als er een inhoud is  
+                        if (elem.value != "") {
+                            return  !isNaN(elem.value) && elem.value > 0;
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                datum: {
+                    msg: "datum ongeldig (d/m/yyyy)",
+                    test: function (elem) {
+                        // dd/mm/yyyy 
+                        var re_datum = /^([0-9]|[0,1,2][0-9]|3[0,1])\/([\d]|1[0,1,2])\/\d{4}$/;
+                        if (elem.value != "") {
+                            return re_datum.test(elem.value);
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                aankomstL: {
+                    msg: "aankomstluchthaven moet verschillen van vertrekluchthaven",
+                    test: function (elem) {
+                        //CUSTOM TEST: aankomstLuchthaven moet verschillen van vertrekluchthaven
+                        if (elem.value != "") {
+                            var aL = elem.value; //aankomstluchthaven
+                            var vL = document.frmVlucht.vertrekL.value; //vertrekLuchthaven 
+                            //Als het gelijk is word er false gereturned
+                            //als het niet gelijk is word er true gereturned
+                            return !(aL == vL);
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                },
+                retourDatum: {
+                    msg: "retourdatum &gt; vertrekdatum",
+                    test: function (elem) {
+                        /* CUSTOM TEST: retourdatum minstens 1 dag na vertrekdatum
+                         * 1 dag later = 86400000 ms
+                         * beide formaten dd/mm/yyyy
+                         */
+                        if (elem.value != "") {
+                            var aD = elem.value; //aankomstdatum
+                            var vD = document.frmVlucht.vertrekdatum.value; //vertrekdatum
+                            var dag = 86400000; //dag in ms
+                            //retourdatum
+                            var arrD1 = aD.split('/');
+                            var D1 = new Date(parseInt(arrD1[2]), parseInt(arrD1[1]) - 1,
+                                    parseInt(arrD1[0]));
+                            //vertrekdatum
+                            var arrD2 = vD.split('/');
+                            var D2 = new Date(parseInt(arrD2[2]), parseInt(arrD2[1]) - 1,
+                                    parseInt(arrD2[0]));
+                            var verschil = D1 - D2;
+                            return (verschil >= dag);
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+            };
+            /******************Window onload******************/
             window.onload = function () {
 
                 //DOM referenties
-                var eFrmVlucht = document.getElementById("frmVlucht");
-                var eRetour = document.getElementById("frmVlucht optRetour");
-                var eEnkel = document.getElementById("frmVlucht optEnkel");
-                var eVolw = document.getElementById("frmVlucht volwassenen");
-                var eKind = document.getElementById("frmVlucht kinderen");
-                var ePeut = document.getElementById("frmVlucht peuters");
-
+                var eFrmVlucht = document.frmVlucht;
+                var eRetour = document.frmVlucht.optRetour;
+                var eEnkel = document.frmVlucht.optEnkel;
+                var eVolw = document.frmVlucht.volwassenen;
+                var eKind = document.frmVlucht.kinderen;
+                var ePeut = document.frmVlucht.peuters;
+                eRetour.addEventListener('click', function () { //radio retour
+                    vluchtType(this.value);
+                });
+                eEnkel.addEventListener('click', function () { //radio enkel
+                    vluchtType(this.value);
+                });
                 //formulier submit
                 eFrmVlucht.addEventListener('submit', function (e) {
                     e.preventDefault();
@@ -79,12 +161,156 @@
                     if (bValid === true)
                         this.submit();
                 });
+                eVolw.addEventListener('blur', passagierNamen);
+                eKind.addEventListener('blur', passagierNamen);
+                ePeut.addEventListener('blur', passagierNamen);
 
             };
-            function valideer(frm){
-               var bValid= true;
-               return bValid;
-            } 
+            /******************FUNCTIES******************/
+            function valideer(frm) {
+                var bValid = true; //optimistisch geen fouten
+                //lus doorheen alle form elementen van het formulier
+                for (var i = 0; i < frm.elements.length; i++) {
+                    //verwijder vorige foutboodschappen
+                    hideErrors(frm.elements[i]);
+                    //valideer veld
+                    var bVeld = valideerVeld(frm.elements[i]);
+                    console.log("het element %s met name %s valideert %s",
+                            frm.elements[i].nodeName, frm.elements[i].name, bVeld);
+                    if (bVeld === false) {
+                        bValid = false;
+                    }
+                }
+                return bValid;
+            }
+            ;
+            /************************************/
+            function valideerVeld(elem) {
+                //valideert één veld volgens zijn class
+                //lege array foutboodschappen
+                var aFoutBoodschappen = [];
+                //met een for in loop worden eigenschappen van oFouten overlopen
+                for (var fout in oFouten) {
+                    //regex aanmaken voor het zoeken naar een naam
+                    var re = new RegExp("(^|\\s)" + fout + "(\\s|$)"); //regex 
+                    // fouten class aanwezig?
+                    if (re.test(elem.className)) {
+                        var bTest = oFouten[fout].test(elem);
+                        console.log("het element %s met name %s wordt gevalideerd voor %s: %s",
+                                elem.nodeName, elem.name, fout, bTest);
+                        if (bTest === false) {
+                            aFoutBoodschappen.push(oFouten[fout].msg);
+                        }
+                    }
+                }
+
+                if (aFoutBoodschappen.length > 0) {
+                    showErrors(elem, aFoutBoodschappen);
+                }
+                return !(aFoutBoodschappen.length > 0);
+            }
+
+            /************************************/
+            function showErrors(elem, errors) {
+                var eBroertje = elem.nextSibling;
+                if (!eBroertje || !(eBroertje.nodeName == "UL" && eBroertje.className == "fouten")) {
+                    eBroertje = document.createElement('ul');
+                    eBroertje.className = "fouten";
+                    elem.parentNode.insertBefore(eBroertje, elem.nextSibling);
+                }
+                //plaats alle foutberichten erin
+                for (var i = 0; i < aErrors.length; i++) {
+                    var eLi = document.createElement('li');
+                    eLi.innerHTML = aErrors[i];
+                    eBroertje.appendChild(eLi);
+                }
+            }
+
+            /************************************/
+            function hideErrors(elem) {
+                //verbergt alle foutboodschappen
+            }
+
+            /************************************/
+            function vluchtType(sType) {
+                /*
+                 des-/activeert de retourdatum
+                 @sType String, 'enkel'|'retour'
+                 */
+
+                var eRetourDatum = document.getElementById('retourdatum');
+                var eLabelRetourdatum = document.getElementById('labelRetourdatum');
+                //als de value enkel word doorgegeven via de param 
+                if (sType == "enkel") {
+                    //geen retourdatum
+                    //dan word de classname van retourdatum waar required staat vervangen door ""
+                    var sClass = eRetourDatum.className.replace("required", "");
+                    //het element krijgt de nieuwe class
+                    eRetourDatum.className = sClass;
+                    //retourdatum word gedisabled
+                    eRetourDatum.disabled = true;
+                    //het invoerveld word op display none gezet
+                    eRetourDatum.style.display = "none"; //verberg label
+                    //het label word op display none gezet
+                    eLabelRetourdatum.style.display = "none"; //verberg label
+                }
+                else {
+                    //anders word de disabel voor retourdatum op false gezet
+                    eRetourDatum.disabled = false;
+                    //word required aan de class toegevoegd
+                    var sClass = eRetourDatum.className + " required";
+                    //word de class gevonden aan het element
+                    eRetourDatum.className = sClass;
+                    //display word weer inline gezet
+                    eRetourDatum.style.display = "inline";
+                    eLabelRetourdatum.style.display = "inline";
+                }
+            }
+            
+            /************************************/
+            function passagierNamen() {
+                /*
+                 * controleert dynamisch het aantal passagiernamen
+                 * passagier 1 blijft steeds bestaan
+                 * veronderstelt de aanwezigheid van een SPAN#EXTRAS
+                 */
+
+                //aantallen velden
+                var eVolw = document.frmVlucht.volwassenen;
+                var eKind = document.frmVlucht.kinderen;
+                var ePeut = document.frmVlucht.peuters;
+                var eExtras = document.getElementById('extras');
+
+                if (!valideerVeld(eVolw) || !valideerVeld(eKind) || !valideerVeld(ePeut)) {
+                    return;
+                }
+
+                //getalwaarden  
+                var nVolw = parseInt(eVolw.value); //ook required
+                var nKind = (eKind.value == "") ? 0 : parseInt(eKind.value);
+                var nPeut = (ePeut.value == "") ? 0 : parseInt(ePeut.value);
+                var nPassagiers = nVolw + nKind + nPeut;
+                var sInhoud = "";
+
+                for (var i = 0; i < nPassagiers - 1; i++) {
+                    sInhoud += maakPassagier(i + 2);
+                }
+                eExtras.innerHTML = sInhoud;
+            }
+            /************************************/
+            function maakPassagier(i){
+                /*
+                * maakt een label en een passagiernaamveld
+                *@i integer
+                *@return   string HTML
+                */
+                var str = "";
+                str += "<label for=\"passagier"+i+"\">Passagier "+i+":</label>\n";
+                str += "<input type=\"text\" name=\"passagier"+i+"\" id=\"passagier"+i+"\" ";
+                str += "title=\"voornaam en famlilienaam van de passagier\" class=\"extra_p text required\" />\n";
+                str += "<br />\n";
+                return str;
+            }
         </script> 
     </head>
     <body>
@@ -95,10 +321,10 @@
             <fieldset id="logingegevens">
                 <legend>Login gegevens</legend>
                 <label for="username">Gebruikersnaam:</label>
-                <input type="text" name="username" id="username" class="text" title="uw gebruikersnaam (emailadres)" />
+                <input type="text" name="username" id="username" class="text required" title="uw gebruikersnaam (emailadres)" />
                 <br />
                 <label for="wachtwoord">Wachtwoord:</label>
-                <input type="password" name="wachtwoord" id="wachtwoord" class="text" title="uw wachtwoord" />
+                <input type="password" name="wachtwoord" id="wachtwoord required" class="text" title="uw wachtwoord" />
                 <br />
                 <label for="onthouLogin">Onthou login?</label>
                 <input type="checkbox" name="onthouLogin" id="onthouLogin" title="Onthou login settings" />
@@ -111,7 +337,7 @@
                 <input name="optVluchtType" type="radio" id="optEnkel" value="enkel" />
                 <br />
                 <label for="vertrekL">van:</label>
-                <select name="vertrekL" id="vertrekL"  title="kies de luchthaven van waaruit u vertrekt"  class="">
+                <select name="vertrekL" id="vertrekL"  title="kies de luchthaven van waaruit u vertrekt"  class="required">
                     <option value="" selected="selected">Kies vertrek luchthaven</option>
                     <option value="aAAR">Aarhus (AAR) </option>
                     <option value="aABZ">Aberdeen (ABZ) </option>
