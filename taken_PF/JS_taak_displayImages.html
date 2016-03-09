@@ -3,95 +3,36 @@
     <head>
         <meta charset="utf-8">
         <title>JS PF taak: Toon - verberg figuren</title>
-        <style type="text/css" media="screen">
-            body {
-                background-color:white;
-                font-family:Arial, Helvetica, sans-serif
-            }
-            aside {
-                float:left;
-                width:210px;
-                height:600Px;
-                background-color:#FFFFCC;
-                padding: 2em 0 1em 0.4em;
-                border:1px groove silver;
-                border-radius:1em;
-            }
-            article {
-                padding:1em;
-                background-color:white;
-                width:auto;
-                min-width:700px;
-                margin-left:230px;
-                border:1px groove silver;
-                border-radius:1em;
-            }
-            footer {
-                border:1px groove silver;
-                border-radius:1em;
-                margin:1em 0 0 230px;
-                padding:1em;
-                text-align:center;
-            }
-            footer img {
-                border:none;
-            }
-            dl {
-                margin-left: 50px
-            }
-            dt {
-                font-weight:bold;
-                padding-left:23px;
-                margin-top: 6px;
-                margin-bottom: 6px;
-                background-image:url(../images/question.gif);
-                background-repeat:no-repeat;
-                background-position: 0px 0px;
-            }
-            dd {
-                padding-left:18px;
-                background-image:url(../images/hand.gif);
-                background-repeat:no-repeat;
-                background-position:  0px 5px;
-            }
-            img.screenshot {
-                margin-top:20px;
-                margin-bottom:20px;
-                /*	display:none; */
-            }
-            .verberg{
-                display:none;
-            }
-            div.toggle {
-                margin:10px 0 0 50px;
-            }
-        </style>
+        <link href="displayimages.css" type="text/css" rel="stylesheet">
+           
         <script>
             window.onload = function () {
                 var eHoofdknop = document.getElementById('hoofdknop');
                 eHoofdknop.addEventListener("click", verberg);
+                eAfbeeldingen = document.querySelectorAll('.screenshot');
                 
+                //eButtons.classname= "verbergknop";
                 
                 var eToggle= document.querySelectorAll('.toggle');
-                var eVerberg = document.createElement('div');
-                eVerberg.style.backgroundColor = "red";
                 
-                 
-                for (j=0;j<eToggle.length;j++){
-                    console.log('test');
-                    eToggle[j].appendChild('eVerberg');
+                for (k = 0; k < eToggle.length; k++) {
+                    var eButtons = document.createElement('button');
+                    eButtons.innerHTML="test";
+                    console.log(eToggle[k].parentNode);
+                    eToggle[k].parentNode.appendChild(eButtons);
+                    //toggle functie maken, this mee sturen. ID aan knoppen geven
+                    eButtons.addEventListener('click', function(){toggle()});
+                };
             };
-                
-            };
+            
             function verberg() {
-                
-                eAfbeeldingen = document.querySelectorAll('.screenshot');
                 for (i = 0; i < eAfbeeldingen.length; i++) {
-                    
                     eAfbeeldingen[i].className += " verberg";
-                    
                 }
             };
+            function toggle(){
+                //kijken welke knop het is
+            }
         </script>
 
     </head>
